@@ -7,29 +7,65 @@ $(document).ready(function () {
     success: function (response) {
       bikeData.dates = getDates(response);
       bikeData.distance = getDistance(response);
-      console.log(bikeData.dates);
-      getChart();
+      bikeData.time = getTime(response);
+      getDistanceChart();
+      getTimeChart();
     }
   });
 });
 
-function getChart() {
-  var ctx = $("#myChart");
-  var chart = new Chart(ctx, {
+function getDistanceChart() {
+  var ctx = $("#distanceChart");
+  var distanceChart = new Chart(ctx, {
     type: "line",
     data: {
-      labels: bikeData.dates, //An array of dates
+      labels: bikeData.dates,
       datasets: [
         {
-          label: "Chart.js Boi",
+          label: "Distance",
           borderColor: "rgb(255,99,132)",
-          data: bikeData.distance // An array of the times
+          data: bikeData.distance
         }
       ]
     },
-
-    options: {}
+    options: {
+      scales: {
+        yAxes: [{
+          ticks: {
+            beginAtZero: true
+          }
+        }]
+      }
+    }
   });
+  console.log(distanceChart.data);
+}
+
+function getTimeChart() {
+  var ctx = $("#timeChart");
+  var timeChart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: bikeData.dates,
+      datasets: [
+        {
+          label: "Time",
+          borderColor: "#666",
+          data: bikeData.time
+        }
+      ]
+    },
+    options: {
+      scales: {
+        yAxes: [{
+          ticks: {
+            beginAtZero: true
+          }
+        }]
+      }
+    }
+  });
+  console.log(timeChart.data);
 }
 
 function getDates(response) {
@@ -56,15 +92,22 @@ function getDates(response) {
     var time = finalDate.getHours() + ':' + finalDate.getMinutes();
     return monthName + " " + day + ", " + fullYear + ' @ ' + time;
   });
-
   return formattedDates;
 }
 
 function getDistance(response) {
-
   var miles = response.map(function (trip) {
     var meters = trip.distance;
     return (meters * 0.000621371192).toFixed(2);
   });
   return miles;
+}
+
+function getTime(response) {
+  var time = response.map(function (trip) {
+    var minutes = Math.floor(trip.duration / 60000);
+    var seconds = parseFloat(((trip.duration % 60000) / 1000).toFixed(0));
+    return parseFloat((seconds == 60 ? (minutes + 1) + ":00" : minutes + ":" + (seconds < 10 ? "0" : "") + seconds));
+  });
+  return time;
 }

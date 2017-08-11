@@ -1,13 +1,6 @@
 var express = require("express");
 var router = express.Router();
 var pool = require("../modules/pool"); //what goes here
-var dates = require("../modules/dates");
-var distance = require("../modules/distance");
-
-var bikeData = {
-    dates: dates,
-    distance: distance
-}
 
 router.get("/", function (req, res) {
     pool.connect(function (errorConnectingToDatabase, client, done) {

@@ -4,18 +4,22 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Chart.js Testing</title>
+    <title>Prime Bikey</title>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="styles.css">
     <script src="vendors/jquery.js"></script>
-     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.js"></script> 
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.js"></script>
     <script src="scripts/client.js"></script>
 </head>
 
 <body>
-    <div style="width:400px;">
-        <canvas id="myChart" width="400" height="400"></canvas>
+    <h1>Prime Bike Chart</h1>
+    <div id="distance" class="chart">
+        <canvas id="distanceChart" width="400" height="400"></canvas>
+    </div>
+    <div id="time" class="chart">
+        <canvas id="timeChart" width="400" height="400"></canvas>
     </div>
 </body>
 
