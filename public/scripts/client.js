@@ -1,74 +1,20 @@
-var bikeData = {};
-
 $(document).ready(function () {
   $.ajax({
     method: "GET",
     url: "/bike-data",
     success: function (response) {
-      bikeData.dates = getDates(response);
-      bikeData.distance = getDistance(response);
-      bikeData.time = getTime(response);
-      getDistanceChart();
-      getTimeChart();
+      getBikeData(response);
+      console.log(getBikeData(response));
+      
     }
   });
 });
 
-function getDistanceChart() {
-  var ctx = $("#distanceChart");
-  var distanceChart = new Chart(ctx, {
-    type: "line",
-    data: {
-      labels: bikeData.dates,
-      datasets: [
-        {
-          label: "Distance",
-          borderColor: "rgb(255,99,132)",
-          data: bikeData.distance
-        }
-      ]
-    },
-    options: {
-      scales: {
-        yAxes: [{
-          ticks: {
-            beginAtZero: true
-          }
-        }]
-      }
-    }
-  });
-  console.log(distanceChart.data);
-}
+function getBikeData(dataFromDB) {
 
-function getTimeChart() {
-  var ctx = $("#timeChart");
-  var timeChart = new Chart(ctx, {
-    type: "line",
-    data: {
-      labels: bikeData.dates,
-      datasets: [
-        {
-          label: "Time",
-          borderColor: "#666",
-          data: bikeData.time
-        }
-      ]
-    },
-    options: {
-      scales: {
-        yAxes: [{
-          ticks: {
-            beginAtZero: true
-          }
-        }]
-      }
-    }
-  });
-  console.log(timeChart.data);
-}
+  var bikeData = [];
 
-function getDates(response) {
+  // Create month name array
   var month = new Array();
   month[0] = "January";
   month[1] = "February";
@@ -83,31 +29,85 @@ function getDates(response) {
   month[10] = "November";
   month[11] = "December";
 
-  var formattedDates = response.map(function (trip) {
+  dataFromDB.forEach(function (trip) {
     var date = parseFloat(trip.date);
     var finalDate = new Date(date);
     var fullYear = finalDate.getFullYear();
     var monthName = month[finalDate.getMonth()];
     var day = finalDate.getDate();
     var time = finalDate.getHours() + ':' + finalDate.getMinutes();
-    return monthName + " " + day + ", " + fullYear + ' @ ' + time;
+
+    var distance = (trip.distance * 0.000621371192).toFixed(2);
+
+    bikeData.push({
+      month: monthName,
+      day: day,
+      year: fullYear,
+      time: time,
+      distance: distance
+    });
   });
-  return formattedDates;
+
+  return bikeData;
 }
 
-function getDistance(response) {
-  var miles = response.map(function (trip) {
-    var meters = trip.distance;
-    return (meters * 0.000621371192).toFixed(2);
-  });
-  return miles;
-}
+// function getDistanceChart(response) {
+//   var ctx = $("#distanceChart");
+//   var distanceChart = new Chart(ctx, {
+//     type: "line",
+//     data: {
+//       labels: getEveningDates(response),
+//       datasets: [
+//         {
+//           label: "Distance",
+//           borderColor: "rgb(255,99,132)",
+//           data: [1,2,3]
+//         }
+//       ]
+//     },
+//     options: {
+//       scales: {
+//         yAxes: [{
+//           ticks: {
+//             beginAtZero: true
+//           }
+//         }]
+//       }
+//     }
+//   });
+// }
 
-function getTime(response) {
-  var time = response.map(function (trip) {
-    var minutes = Math.floor(trip.duration / 60000);
-    var seconds = parseFloat(((trip.duration % 60000) / 1000).toFixed(0));
-    return parseFloat((seconds == 60 ? (minutes + 1) + ":00" : minutes + ":" + (seconds < 10 ? "0" : "") + seconds));
-  });
-  return time;
-}
+// function getTimeChart() {
+//   var ctx = $("#timeChart");
+//   var timeChart = new Chart(ctx, {
+//     type: "line",
+//     data: {
+//       labels: bikeData.dates,
+//       datasets: [
+//         {
+//           label: "Time",
+//           borderColor: "#666",
+//           data: bikeData.time
+//         }
+//       ]
+//     },
+//     options: {
+//       scales: {
+//         yAxes: [{
+//           ticks: {
+//             beginAtZero: true
+//           }
+//         }]
+//       }
+//     }
+//   });
+// }
+
+// function getTime(response) {
+//   var time = response.map(function (trip) {
+//     var minutes = Math.floor(trip.duration / 60000);
+//     var seconds = parseFloat(((trip.duration % 60000) / 1000).toFixed(0));
+//     return parseFloat((seconds == 60 ? (minutes + 1) + ":00" : minutes + ":" + (seconds < 10 ? "0" : "") + seconds));
+//   });
+//   return time;
+// }
