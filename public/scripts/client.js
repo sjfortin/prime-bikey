@@ -1,18 +1,109 @@
-$(document).ready(function () {
-  $.ajax({
-    method: "GET",
-    url: "/bike-data",
-    success: function (response) {
-      getBikeData(response);
-      console.log(getBikeData(response));
-      
-    }
-  });
+var app = angular.module('BikeyApp', ['ngMaterial']).config(function ($mdThemingProvider) {
+
+  $mdThemingProvider.theme('default')
+    .primaryPalette('indigo', {
+      'default': '900',
+      'hue-1': '100',
+      'hue-2': '500',
+      'hue-3': 'A100'
+    })
+    .accentPalette('grey', {
+      'default': '50'
+    })
+    .backgroundPalette('purple', {
+      'default': '50'
+    });
+
 });
 
-function getBikeData(dataFromDB) {
+app.controller('BikeyController', ['$http', function ($http) {
+  var self = this;
 
-  var bikeData = [];
+  self.getBikeData = function () {
+    $http({
+      method: 'GET',
+      url: '/bike-data'
+    }).then(function (response) {
+      var cleanBikeData = formatBikeData(response.data);
+      getDistanceChart(cleanBikeData);
+      getTimeChart(cleanBikeData);
+    });
+  }
+
+  self.getBikeData();
+
+}]);
+
+// Displays the distance chart
+function getDistanceChart(data) {
+
+  var ctx = document.getElementById("distanceChart").getContext('2d');
+
+  var distanceChart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: data.map(function (trip) {
+        return trip.month + ' ' + trip.day + ', ' + trip.year;
+      }),
+      datasets: [
+        {
+          label: "Distance",
+          borderColor: "rgb(255,99,132)",
+          data: data.map(function (trip) {
+            return trip.distance;
+          })
+        }
+      ]
+    },
+    options: {
+      scales: {
+        yAxes: [{
+          ticks: {
+            beginAtZero: true
+          }
+        }]
+      }
+    }
+  });
+}
+
+// Displays the time chart
+function getTimeChart(data) {
+  console.log('Time chart bike data', data);
+  
+  var ctx = document.getElementById("timeChart").getContext('2d');
+
+  var timeChart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: data.map(function (trip) {
+        return trip.month;
+      }),
+      datasets: [
+        {
+          label: "Time",
+          borderColor: "#666",
+          data: data.map(function (trip) {
+            return parseFloat(trip.duration);
+          })
+        }
+      ]
+    },
+    options: {
+      scales: {
+        yAxes: [{
+          ticks: {
+            beginAtZero: true
+          }
+        }]
+      }
+    }
+  });
+}
+
+// Returns array of bike data objects
+function formatBikeData(bikeData) {
+  var formattedBikeData = [];
 
   // Create month name array
   var month = new Array();
@@ -29,85 +120,33 @@ function getBikeData(dataFromDB) {
   month[10] = "November";
   month[11] = "December";
 
-  dataFromDB.forEach(function (trip) {
+  bikeData.forEach(function (trip) {
     var date = parseFloat(trip.date);
     var finalDate = new Date(date);
     var fullYear = finalDate.getFullYear();
     var monthName = month[finalDate.getMonth()];
     var day = finalDate.getDate();
     var time = finalDate.getHours() + ':' + finalDate.getMinutes();
-
     var distance = (trip.distance * 0.000621371192).toFixed(2);
 
-    bikeData.push({
+    formattedBikeData.push({
       month: monthName,
       day: day,
       year: fullYear,
       time: time,
-      distance: distance
+      distance: distance,
+      duration: millisToMinutesAndSeconds(trip.duration)
     });
   });
+  console.log('this is the formatted data', formattedBikeData);
 
-  return bikeData;
+  return formattedBikeData;
+};
+
+// Converts time from millis to minutes and seconds
+function millisToMinutesAndSeconds(millis) {
+  var minutes = Math.floor(millis / 60000);
+  var seconds = ((millis % 60000) / 1000).toFixed(0);
+  return (seconds == 60 ? (minutes + 1) + ":00" : minutes + ":" + (seconds < 10 ? "0" : "") + seconds);
 }
 
-// function getDistanceChart(response) {
-//   var ctx = $("#distanceChart");
-//   var distanceChart = new Chart(ctx, {
-//     type: "line",
-//     data: {
-//       labels: getEveningDates(response),
-//       datasets: [
-//         {
-//           label: "Distance",
-//           borderColor: "rgb(255,99,132)",
-//           data: [1,2,3]
-//         }
-//       ]
-//     },
-//     options: {
-//       scales: {
-//         yAxes: [{
-//           ticks: {
-//             beginAtZero: true
-//           }
-//         }]
-//       }
-//     }
-//   });
-// }
-
-// function getTimeChart() {
-//   var ctx = $("#timeChart");
-//   var timeChart = new Chart(ctx, {
-//     type: "line",
-//     data: {
-//       labels: bikeData.dates,
-//       datasets: [
-//         {
-//           label: "Time",
-//           borderColor: "#666",
-//           data: bikeData.time
-//         }
-//       ]
-//     },
-//     options: {
-//       scales: {
-//         yAxes: [{
-//           ticks: {
-//             beginAtZero: true
-//           }
-//         }]
-//       }
-//     }
-//   });
-// }
-
-// function getTime(response) {
-//   var time = response.map(function (trip) {
-//     var minutes = Math.floor(trip.duration / 60000);
-//     var seconds = parseFloat(((trip.duration % 60000) / 1000).toFixed(0));
-//     return parseFloat((seconds == 60 ? (minutes + 1) + ":00" : minutes + ":" + (seconds < 10 ? "0" : "") + seconds));
-//   });
-//   return time;
-// }

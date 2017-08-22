@@ -6,7 +6,6 @@ var bikeData = require("./routes/bike-data")
 var port = 3000;
 
 app.use(bodyParser.json());
-bodyParser.urlencoded({ extended: true });
 
 app.use(express.static("public"));
 
